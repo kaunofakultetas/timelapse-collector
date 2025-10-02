@@ -1,0 +1,63 @@
+services:
+
+  timelapse-endpoint:
+    container_name: timelapse-endpoint
+    image: caddy:2.10.2-alpine
+    ports:
+      - 80:80
+    environment:
+      # admin:admin
+      - BASIC_AUTH_USER=admin
+      - BASIC_AUTH_HASH=$$2a$$12$$N4I4vIZPGy1KghTUo4bNTu89SnQeLFk7ZOPKlCDRrQEiwxnhaIkvO
+    volumes:
+      - ./endpoint/Caddyfile:/etc/caddy/Caddyfile:ro
+    restart: unless-stopped
+
+
+
+  timelapse-filebrowser:
+    container_name: timelapse-filebrowser
+    image: timelapse-filebrowser
+    build:
+      context: ./filebrowser
+      dockerfile: Dockerfile
+      args: 
+        - FILEBROWSER_TITLE=Timelapse File Browser
+        - FILEBROWSER_BASE_URL=/
+    read_only: false
+    volumes:
+      - ./SAVED_FRAMES:/data:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+
+
+
+  timelapse-collector:
+    container_name: timelapse-collector
+    build:
+      context: collector
+      dockerfile: Dockerfile
+    user: 1000:1000
+    environment:
+      # ENTRANCE CAMERA
+      - CAMERA_TYPE_0=HIKVISION
+      - CAMERA_IP_0=192.168.12.34
+      - CAMERA_USERPASS_0=admin:password
+
+      # YARD CAMERA
+      - CAMERA_TYPE_1=HIKVISION
+      - CAMERA_IP_1=192.168.12.56
+      - CAMERA_USERPASS_1=root:admin123
+
+      # OUTSIDE CAMERA
+      - CAMERA_TYPE_2=HIKVISION
+      - CAMERA_IP_2=192.168.12.78
+      - CAMERA_USERPASS_2=admin:password123
+
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./collector:/app
+      - ./SAVED_FRAMES:/SAVED_FRAMES
+    restart: unless-stopped
