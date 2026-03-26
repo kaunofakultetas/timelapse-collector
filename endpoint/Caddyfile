@@ -2,5 +2,6 @@
     basic_auth {
         {env.BASIC_AUTH_USER} {env.BASIC_AUTH_HASH}
     }
+    redir / /filebrowser/
     reverse_proxy timelapse-filebrowser:80
 }
