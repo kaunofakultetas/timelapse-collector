@@ -3,6 +3,8 @@ services:
   timelapse-endpoint:
     container_name: timelapse-endpoint
     image: caddy:2.10.2-alpine
+    user: 1000:1000
+    read_only: true
     ports:
       - 80:80
     environment:
@@ -17,13 +19,8 @@ services:
 
   timelapse-filebrowser:
     container_name: timelapse-filebrowser
-    image: timelapse-filebrowser
-    build:
-      context: ./filebrowser
-      dockerfile: Dockerfile
-      args: 
-        - FILEBROWSER_TITLE=Timelapse File Browser
-        - FILEBROWSER_BASE_URL=/
+    image: vuknf/filebrowser-noauth:latest
+    user: 1000:1000
     read_only: false
     volumes:
       - ./SAVED_FRAMES:/data:ro
@@ -36,10 +33,9 @@ services:
 
   timelapse-collector:
     container_name: timelapse-collector
-    build:
-      context: collector
-      dockerfile: Dockerfile
+    build: ./collector
     user: 1000:1000
+    read_only: true
     environment:
       # ENTRANCE CAMERA
       - CAMERA_TYPE_0=HIKVISION
