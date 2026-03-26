@@ -49,17 +49,18 @@ while True:
             if(CAMERA_TYPE is None):
                 continue
 
-            try:
-                for retry in range(5):
-                    if(CAMERA_TYPE.upper() == "HIKVISION"):
-                        hikvision_getFrame(timeNow, CAMERA_IP, CAMERA_USERPASS)
-                        break
-                    else:
-                        print(f"Camera type not supported: {CAMERA_TYPE}")
-                        break
-                        
-            except Exception as e:
-                print(f"Exception fetching frame from {CAMERA_IP}: {e}")
+            if(CAMERA_TYPE.upper() != "HIKVISION"):
+                print(f"Camera type not supported: {CAMERA_TYPE}")
+                continue
+
+            for attempt in range(3):
+                try:
+                    hikvision_getFrame(timeNow, CAMERA_IP, CAMERA_USERPASS)
+                    break
+                except Exception as e:
+                    print(f"Attempt {attempt + 1}/3 failed for {CAMERA_IP}: {e}")
+                    if attempt < 2:
+                        sleep(10)
                 
     
     sleep(1)
